@@ -1,0 +1,17 @@
+{
+  "stadium_rules": [
+    "No outside food or drinks allowed.",
+    "Bags must be clear plastic and no larger than 12x6x12 inches.",
+    "Smoking is only permitted in designated areas outside the main gates.",
+    "Re-entry is strictly prohibited."
+  ],
+  "concessions": [
+    { "name": "Burger Stand", "location": "North Stand, Section 102", "items": ["Cheeseburger", "Fries", "Soda"] },
+    { "name": "Pizza Hut", "location": "South Stand, Section 205", "items": ["Pepperoni Slice", "Cheese Slice", "Water"] },
+    { "name": "Beer Garden", "location": "VIP Lounge", "items": ["Craft Beer", "Pretzels"] }
+  ],
+  "faqs": [
+    { "question": "Where are the restrooms?", "answer": "Restrooms are located near every main gate and at the corner of each stand." },
+    { "question": "Is there a first aid station?", "answer": "Yes, first aid is located near Gate A." }
+  ]
+}
