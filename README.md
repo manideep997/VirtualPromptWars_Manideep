@@ -59,7 +59,3 @@ Built strictly for zero-setup deployments, the platform acts as a resilient matr
 *Checkout the complete documentation inside the `sentient-stadium` subdirectory for more details!*
 
 ---
-<div align="center">
-  <br>
-  <i>Built iteratively using Antigravity AI for prompt challenges.</i>
-</div>
