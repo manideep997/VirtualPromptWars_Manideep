@@ -131,14 +131,19 @@ export default function CheckInPortal() {
     };
   };
 
+  const getQrDataUrl = (size: number) => {
+    if (!generatedPass) return "";
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sentient-stadium.vercel.app';
+    const verifyUrl = `${origin}/agent-verify?ticketId=${encodeURIComponent(generatedPass.ticketId)}&name=${encodeURIComponent(generatedPass.fullName)}&email=${encodeURIComponent(generatedPass.email)}&stadium=${encodeURIComponent(generatedPass.stadium.name)}&gate=${encodeURIComponent(generatedPass.gate)}&idType=${encodeURIComponent(generatedPass.idType)}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(verifyUrl)}`;
+  };
+
   // Luxury PDF printable ticket pass generator! Includes website logo and scannable QR code!
   const printPassToPdf = () => {
     if (!generatedPass) return;
 
-    // Generate functional, scannable QR Code URL
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-      `SENTIENT STADIUM VIP FAST-PASS\nTicket Ref: ${generatedPass.ticketId}\nHolder: ${generatedPass.fullName}\nEmail: ${generatedPass.email}\nVenue: ${generatedPass.stadium.name}\nGate: ${generatedPass.gate}\nVerification: BIOMETRIC MATCH`
-    )}`;
+    // Generate functional, scannable QR Code URL pointing to the Agent Verification Dashboard
+    const qrCodeUrl = getQrDataUrl(180);
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -675,9 +680,7 @@ export default function CheckInPortal() {
                 
                 <div className="relative p-2 bg-white rounded-xl shadow-lg border border-emerald-500/20">
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(
-                      `SENTIENT STADIUM VIP FAST-PASS\nTicket Ref: ${generatedPass.ticketId}\nHolder: ${generatedPass.fullName}\nEmail: ${generatedPass.email}\nVenue: ${generatedPass.stadium.name}\nGate: ${generatedPass.gate}\nStatus: BIOMETRICALLY VERIFIED`
-                    )}`} 
+                    src={getQrDataUrl(130)} 
                     alt="Scan QR" 
                     className="w-28 h-28 select-none"
                   />
