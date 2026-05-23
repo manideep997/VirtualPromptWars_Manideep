@@ -8,9 +8,10 @@ export default function StadiumMap() {
   const gates = useTelemetryStore((state) => state.gates);
   const updateGate = useTelemetryStore((state) => state.updateGate);
 
-  // Simulation state
-  const [isSimulating, setIsSimulating] = useState(true);
-  const [simulationMode, setSimulationMode] = useState<'normal' | 'halftime' | 'evac'>('normal');
+  const isSimulating = useTelemetryStore((state) => state.isSimulating);
+  const setIsSimulating = useTelemetryStore((state) => state.setIsSimulating);
+  const simulationMode = useTelemetryStore((state) => state.simulationMode);
+  const setSimulationMode = useTelemetryStore((state) => state.setSimulationMode);
   const [activeGateHover, setActiveGateHover] = useState<string | null>(null);
 
   // Local simulation engine - runs when WebSocket is not pushing or by choice
@@ -96,7 +97,7 @@ export default function StadiumMap() {
   return (
     <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
       {/* Visual Stadium Map Area */}
-      <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+      <div className="lg:col-span-2 bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] relative overflow-hidden flex flex-col justify-between hover:border-white/[0.08] transition-all duration-500">
         
         {/* Glow Effects */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
@@ -233,7 +234,7 @@ export default function StadiumMap() {
             {/* Hover Tooltip Overlay */}
             {activeGateHover && (
               <div 
-                className="absolute bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 p-4 rounded-xl shadow-2xl max-w-xs transition-all duration-300 transform scale-100 z-30"
+                className="absolute bg-slate-950/90 backdrop-blur-3xl border border-white/10 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] max-w-xs transition-all duration-300 transform scale-100 z-30"
                 style={{
                   top: activeGateHover === 'Gate VIP' ? '15%' : activeGateHover === 'Gate B' ? '65%' : '40%',
                   left: activeGateHover === 'Gate A' ? '18%' : activeGateHover === 'Gate C' ? '50%' : '35%'
@@ -285,7 +286,7 @@ export default function StadiumMap() {
       </div>
 
       {/* Control Panel Area */}
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-slate-800/80 shadow-2xl flex flex-col justify-between">
+      <div className="bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] flex flex-col justify-between hover:border-white/[0.08] transition-all duration-500">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-2">
             <Zap className="w-5 h-5 text-amber-400" />

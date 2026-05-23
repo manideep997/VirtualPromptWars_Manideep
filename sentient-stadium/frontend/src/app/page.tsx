@@ -30,10 +30,10 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-8 lg:p-12 bg-[#0b0f19] text-slate-100 overflow-x-hidden relative">
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-8 lg:p-12 bg-[#05070f] text-slate-100 overflow-x-hidden relative">
       
       {/* Background Radial Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950/40 via-[#0b0f19] to-transparent -z-10 blur-3xl"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950/40 via-[#05070f] to-transparent -z-10 blur-3xl"></div>
 
       {/* Main Container */}
       <div className="z-10 max-w-6xl w-full flex flex-col gap-8">
@@ -66,7 +66,7 @@ export default function Home() {
         </div>
 
         {/* SECTION 4: Interactive Insights, Benefits, and Architecture (USER REQUESTED EXPLANATION) */}
-        <section id="insights-section" className="scroll-mt-6 bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-slate-800/80 shadow-2xl mt-8 relative overflow-hidden">
+        <section id="insights-section" className="scroll-mt-6 bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 md:p-8 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] mt-8 relative overflow-hidden transition-all duration-500 hover:border-white/[0.08]">
           
           {/* Ambient light overlay */}
           <div className="absolute -top-36 -right-36 w-72 h-72 bg-cyan-500/5 rounded-full blur-3xl"></div>

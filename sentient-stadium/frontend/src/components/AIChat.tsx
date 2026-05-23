@@ -83,7 +83,7 @@ export default function AIChat() {
     <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
       
       {/* Quick Suggestions Board */}
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-slate-800/80 shadow-2xl flex flex-col justify-between">
+      <div className="bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] flex flex-col justify-between hover:border-white/[0.08] transition-all duration-500">
         <div>
           <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 mb-3">
             <HelpCircle className="w-4 h-4 text-emerald-400" />
@@ -122,7 +122,7 @@ export default function AIChat() {
       </div>
 
       {/* Main Glassmorphic Chat Window */}
-      <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-slate-800/80 shadow-2xl flex flex-col h-[500px] justify-between relative overflow-hidden">
+      <div className="lg:col-span-2 bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] flex flex-col h-[500px] justify-between relative overflow-hidden hover:border-white/[0.08] transition-all duration-500">
         
         {/* Ambient Glow */}
         <div className="absolute -bottom-36 -left-36 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl"></div>
