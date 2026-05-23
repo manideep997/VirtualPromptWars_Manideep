@@ -32,8 +32,9 @@ Built strictly for zero-setup deployments, the platform acts as a resilient matr
 | **💡 Phase 1: Infrastructure** | Docker & Fail-Fast | Zero-setup `docker-compose`, programmatic auto-port-fallback (3000 -> 3001), stringent environment checks. |
 | **☕ Phase 2: Engine** | Spring Boot API | Ultra-fast H2 In-Memory DB, `@Valid` boundary protections, structured JSON Exception Handlers, Dynamic QR Entry generation. |
 | **🐍 Phase 3: Hardware Sync** | Python Simulator | Virtual sensors pumping pseudo-randomized stats with **Moving Average Signal Processing** + Exponential `--halftime` stress tests via STOMP WebSockets. |
-| **⚛️ Phase 4: UI Dashboard** | Next.js & Tailwind | 2D dynamic SVG map hooked to `Zustand` global state mutating colors in real-time based on STOMP traffic thresholds. Backoff reconnect built in. |
+| **⚛️ Phase 4: UI Dashboard** | Next.js & Tailwind | 3D interactive stadium tilt maps, glassmorphic UI overlaying player entrances, concession lines, medical hubs, and real-time gate delays. |
 | **🧠 Phase 5: AI Orchestration** | Google Gemini | Safe-mode degradation wrapper around the Gemini API combining static context files with real transient local state. |
+| **🎫 Phase 6: Biometric Gate Sync** | Fast-Pass & Mobile Scans | Secure ID document uploading, server-side dynamic LAN IP auto-discovery to bypass mobile localhost limits, and database base64 portrait photo sync. |
 
 ---
 

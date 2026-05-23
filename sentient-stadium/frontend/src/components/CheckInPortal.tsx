@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTelemetryStore, STADIUMS } from '../store/useTelemetryStore';
 import { 
   User, 
@@ -29,8 +29,22 @@ export default function CheckInPortal() {
   const [idType, setIdType] = useState("passport");
   const [idFileName, setIdFileName] = useState<string | null>(null);
   const [idPhotoUrl, setIdPhotoUrl] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [hostOverride, setHostOverride] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Fetch server IP on load to auto-fill the host override
+  useEffect(() => {
+    fetch('/api/local-ip')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.fullAddress) {
+          setHostOverride(data.fullAddress);
+        }
+      })
+      .catch(err => console.warn("Failed to auto-discover local network IP address:", err));
+  }, []);
   
   // Pass Generation State
   const [generatedPass, setGeneratedPass] = useState<any | null>(null);
@@ -52,6 +66,15 @@ export default function CheckInPortal() {
     const objectUrl = URL.createObjectURL(file);
     setIdPhotoUrl(objectUrl);
 
+    // Read file as Base64 to sync with backend database
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setPhotoBase64(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+
     setIsUploading(true);
     setUploadProgress(0);
 
@@ -68,14 +91,50 @@ export default function CheckInPortal() {
     }, 150);
   };
 
-  const handleGeneratePass = (e: React.FormEvent) => {
+  const handleGeneratePass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !idFileName) return;
 
     setIsGenerating(true);
     
-    // Simulate biometric check / verification delays
-    setTimeout(() => {
+    const timestamp = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const gateWaitTime = currentGateData.waitTimeMinutes;
+
+    const ticketData = {
+      ticketId,
+      fullName,
+      email,
+      stadium: {
+        id: activeStadiumInfo.id,
+        name: activeStadiumInfo.name,
+        location: activeStadiumInfo.location,
+        capacity: activeStadiumInfo.capacity,
+        themeColor: activeStadiumInfo.themeColor
+      },
+      gate: gateId,
+      idType,
+      photoDataUrl: photoBase64 || "",
+      timestamp,
+      gateWaitTime
+    };
+
+    try {
+      const response = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ticketData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to synchronize ticket to server database.');
+      }
+      
       setGeneratedPass({
         fullName,
         email,
@@ -84,17 +143,26 @@ export default function CheckInPortal() {
         gate: gateId,
         idType,
         idFileName,
-        timestamp: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        gateWaitTime: currentGateData.waitTimeMinutes
+        timestamp,
+        gateWaitTime
       });
+    } catch (err) {
+      console.error("Ticket Synchronization Error:", err);
+      // Fallback: still generate locally even if API has issues
+      setGeneratedPass({
+        fullName,
+        email,
+        ticketId,
+        stadium: activeStadiumInfo,
+        gate: gateId,
+        idType,
+        idFileName,
+        timestamp,
+        gateWaitTime
+      });
+    } finally {
       setIsGenerating(false);
-    }, 1200);
+    }
   };
 
   const handleTicketMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -119,6 +187,7 @@ export default function CheckInPortal() {
     setTicketId(`ST-${Math.floor(10000 + Math.random() * 90000)}`);
     setIdFileName(null);
     setIdPhotoUrl(null);
+    setPhotoBase64(null);
     setGeneratedPass(null);
     setUploadProgress(0);
   };
@@ -133,7 +202,13 @@ export default function CheckInPortal() {
 
   const getQrDataUrl = (size: number) => {
     if (!generatedPass) return "";
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sentient-stadium.vercel.app';
+    let origin = typeof window !== 'undefined' ? window.location.origin : 'https://sentient-stadium.vercel.app';
+    
+    // Apply host override if provided (useful for Wi-Fi IP routing during local mobile scans)
+    if (hostOverride.trim() !== "") {
+      origin = hostOverride.trim().startsWith("http") ? hostOverride.trim() : `http://${hostOverride.trim()}`;
+    }
+    
     const verifyUrl = `${origin}/agent-verify?ticketId=${encodeURIComponent(generatedPass.ticketId)}&name=${encodeURIComponent(generatedPass.fullName)}&email=${encodeURIComponent(generatedPass.email)}&stadium=${encodeURIComponent(generatedPass.stadium.name)}&gate=${encodeURIComponent(generatedPass.gate)}&idType=${encodeURIComponent(generatedPass.idType)}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(verifyUrl)}`;
   };
@@ -563,6 +638,24 @@ export default function CheckInPortal() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Optional Wi-Fi IP Scanner Override for Local Mobile testing */}
+            <div className="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 space-y-2 mt-2">
+              <label className="text-[10px] text-slate-400 uppercase font-black tracking-wider block">
+                Mobile Scanner Domain Override (Optional)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 192.168.1.15:3000 or your Vercel URL"
+                value={hostOverride}
+                onChange={(e) => setHostOverride(e.target.value)}
+                disabled={!!generatedPass}
+                className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none transition-all"
+              />
+              <p className="text-[9px] text-slate-500 leading-normal">
+                If testing on a real mobile device locally, input your computer's local Wi-Fi IP address or production Vercel URL so your phone can reach the local Next.js server!
+              </p>
             </div>
 
             {/* Form Submit Button */}

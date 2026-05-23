@@ -56,5 +56,6 @@ python3 virtual_sensor.py --halftime
 1. **Phase 1: Infrastructure**: Robust Dockerization, port-fallback (`next.config` & `server.js` | Spring WebServerFactory config), `.env` fail-fast verifications.
 2. **Phase 2: Backend**: In-memory H2, Strict DTO validations (`@Valid`), Global JSON Exception handling, QR ticket UUID generator.
 3. **Phase 3: Telemetry Stream**: WebSocket Broadcaster via STOMP, Python virtual sensor.
-4. **Phase 4: Dashboard**: Next.js & Tailwind, Zustand global state, 2D SVG map dynamic color binding, resilient WebSocket reconnectivity.
+4. **Phase 4: Dashboard**: Next.js & Tailwind, Zustand global state, 3D interactive tilt maps overlaying player tunnels, concession menu queues, and gate telemetry.
 5. **Phase 5: AI Orchestration**: Google Gemini integration answering questions based on static JSON rules + live transient venue data, with *safe-mode degradation*.
+6. **Phase 6: Biometric Gate Sync**: Secure ID document uploader, automatic server LAN IP dynamic resolver to bypass localhost scanning errors, base64 data URL reader, and cross-device boarding pass biometric photograph synchronization.

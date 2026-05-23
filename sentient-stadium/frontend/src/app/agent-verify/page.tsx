@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   ShieldCheck, 
@@ -18,16 +18,18 @@ import {
 
 function AgentVerifyContent() {
   const searchParams = useSearchParams();
-  
-  // Read ticket parameters encoded in the QR Code
   const ticketId = searchParams.get('ticketId') || 'ST-99824';
-  const fullName = searchParams.get('name') || 'John Doe';
-  const email = searchParams.get('email') || 'john.doe@example.com';
-  const stadiumName = searchParams.get('stadium') || 'Spotify Camp Nou';
-  const gateId = searchParams.get('gate') || 'Gate A';
-  const idType = searchParams.get('idType') || 'Passport';
+
+  const [ticketDetails, setTicketDetails] = useState({
+    fullName: searchParams.get('name') || 'John Doe',
+    email: searchParams.get('email') || 'john.doe@example.com',
+    stadiumName: searchParams.get('stadium') || 'Spotify Camp Nou',
+    gateId: searchParams.get('gate') || 'Gate A',
+    idType: searchParams.get('idType') || 'Passport',
+    photoDataUrl: ''
+  });
   
-  // State for agent actions
+  const [isLoading, setIsLoading] = useState(true);
   const [entryStatus, setEntryStatus] = useState<'pending' | 'granted' | 'flagged'>('pending');
   const [scanTime] = useState(() => new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -35,39 +37,85 @@ function AgentVerifyContent() {
     second: '2-digit'
   }));
 
+  useEffect(() => {
+    if (!ticketId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    fetch(`/api/tickets?ticketId=${encodeURIComponent(ticketId)}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then(data => {
+        if (data && data.ticket) {
+          setTicketDetails({
+            fullName: data.ticket.fullName,
+            email: data.ticket.email,
+            stadiumName: data.ticket.stadium?.name || 'Spotify Camp Nou',
+            gateId: data.ticket.gate || 'Gate A',
+            idType: data.ticket.idType || 'Passport',
+            photoDataUrl: data.ticket.photoDataUrl || ''
+          });
+        }
+      })
+      .catch(err => {
+        console.warn("Could not load real-time database ticket, falling back to URL search params:", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [ticketId]);
+
   const handleGrantEntry = () => {
     setEntryStatus('granted');
     // Simulated success sound
-    if (typeof window !== 'undefined') {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note (success)
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      osc.start();
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-      osc.stop(audioCtx.currentTime + 0.3);
+    try {
+      if (typeof window !== 'undefined') {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          const audioCtx = new AudioContextClass();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note (success)
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          osc.start();
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.stop(audioCtx.currentTime + 0.3);
+        }
+      }
+    } catch (soundErr) {
+      console.warn("AudioContext blocked on mobile device:", soundErr);
     }
   };
 
   const handleFlagTicket = () => {
     setEntryStatus('flagged');
     // Simulated alert sound
-    if (typeof window !== 'undefined') {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, audioCtx.currentTime); // low frequency buzz
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      osc.start();
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-      osc.stop(audioCtx.currentTime + 0.5);
+    try {
+      if (typeof window !== 'undefined') {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          const audioCtx = new AudioContextClass();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, audioCtx.currentTime); // low frequency buzz
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          osc.start();
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+          osc.stop(audioCtx.currentTime + 0.5);
+        }
+      }
+    } catch (soundErr) {
+      console.warn("AudioContext blocked on mobile device:", soundErr);
     }
   };
 
@@ -136,11 +184,19 @@ function AgentVerifyContent() {
         <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-5 space-y-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             {/* Portrait Photo */}
-            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-emerald-500/40 bg-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.25)] flex-shrink-0">
-              {/* Fallback image as standard user icon */}
-              <div className="w-full h-full flex items-center justify-center bg-slate-950 text-slate-600">
-                <User className="w-10 h-10" />
-              </div>
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-emerald-500/40 bg-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.25)] flex-shrink-0 flex items-center justify-center">
+              {ticketDetails.photoDataUrl ? (
+                <img 
+                  src={ticketDetails.photoDataUrl} 
+                  alt="Biometric Portrait" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                /* Fallback image as standard user icon */
+                <div className="w-full h-full flex items-center justify-center bg-slate-950 text-slate-650">
+                  <User className="w-10 h-10" />
+                </div>
+              )}
               {/* Holographic scanner line */}
               <div className="absolute inset-x-0 h-0.5 bg-emerald-400 opacity-60 top-0 animate-[bounce_2s_infinite]"></div>
             </div>
@@ -149,8 +205,8 @@ function AgentVerifyContent() {
             <div className="flex-1 space-y-3 min-w-0">
               <div>
                 <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black block">VERIFIED ATTENDEE</span>
-                <h3 className="text-base font-black text-white leading-tight truncate">{fullName}</h3>
-                <span className="text-[10px] text-slate-400 block truncate">{email}</span>
+                <h3 className="text-base font-black text-white leading-tight truncate">{ticketDetails.fullName}</h3>
+                <span className="text-[10px] text-slate-400 block truncate">{ticketDetails.email}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-900 text-xs">
@@ -158,7 +214,7 @@ function AgentVerifyContent() {
                   <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black block">VENUE LOCK</span>
                   <span className="font-extrabold text-slate-200 flex items-center gap-1 mt-0.5">
                     <MapPin className="w-3.5 h-3.5 text-rose-500" />
-                    {stadiumName.split(' ')[0]}
+                    {ticketDetails.stadiumName.split(' ')[0]}
                   </span>
                 </div>
                 <div>
@@ -180,11 +236,11 @@ function AgentVerifyContent() {
             </div>
             <div className="flex items-center gap-2.5">
               <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>Assigned Gate lock: <strong className="text-cyan-400">{gateId}</strong></span>
+              <span>Assigned Gate lock: <strong className="text-cyan-400">{ticketDetails.gateId}</strong></span>
             </div>
             <div className="flex items-center gap-2.5">
               <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>Verification Document: <strong>{idType.toUpperCase()}</strong></span>
+              <span>Verification Document: <strong>{ticketDetails.idType.toUpperCase()}</strong></span>
             </div>
             <div className="flex items-center gap-2.5">
               <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
