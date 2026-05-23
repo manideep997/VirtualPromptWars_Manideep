@@ -8,6 +8,10 @@
   </p>
 
   <p>
+    🚀 <b>Live Production URL:</b> <a href="https://sentient-stadium.manideep.com"><b>sentient-stadium.manideep.com</b></a>
+  </p>
+
+  <p>
     <img src="https://img.shields.io/badge/Java-Spring_Boot-green?style=for-the-badge&logo=spring" alt="Spring Boot" />
     <img src="https://img.shields.io/badge/Next.js-React-black?style=for-the-badge&logo=next.js" alt="Next.js" />
     <img src="https://img.shields.io/badge/Python-Simulator-blue?style=for-the-badge&logo=python" alt="Python" />
