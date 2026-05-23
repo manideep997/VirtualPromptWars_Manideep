@@ -19,7 +19,8 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'benefits' | 'architecture'>('benefits');
+  const activeTab = useTelemetryStore((state) => state.activeTab);
+  const setActiveTab = useTelemetryStore((state) => state.setActiveTab);
 
   useEffect(() => {
     connectWebSocket();
@@ -65,7 +66,7 @@ export default function Home() {
         </div>
 
         {/* SECTION 4: Interactive Insights, Benefits, and Architecture (USER REQUESTED EXPLANATION) */}
-        <section className="bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-slate-800/80 shadow-2xl mt-8 relative overflow-hidden">
+        <section id="insights-section" className="scroll-mt-6 bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-slate-800/80 shadow-2xl mt-8 relative overflow-hidden">
           
           {/* Ambient light overlay */}
           <div className="absolute -top-36 -right-36 w-72 h-72 bg-cyan-500/5 rounded-full blur-3xl"></div>
@@ -101,6 +102,16 @@ export default function Home() {
               >
                 SYSTEM ARCHITECTURE
               </button>
+              <button 
+                onClick={() => setActiveTab('faqs')}
+                className={`text-xs font-black px-4 py-2 rounded-lg transition-all ${
+                  activeTab === 'faqs' 
+                  ? 'bg-slate-850 text-white border border-slate-700/50 shadow-md' 
+                  : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                FAQs & SAFETY DIRECTIVES
+              </button>
             </div>
           </div>
 
@@ -132,7 +143,8 @@ export default function Home() {
               {/* Card 2 */}
               <div 
                 onClick={() => {
-                  document.getElementById('ai-chat')?.scrollIntoView({ behavior: 'smooth' });
+                  setActiveTab('faqs');
+                  document.getElementById('insights-section')?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-cyan-500/50 hover:bg-slate-950/80 hover:scale-[1.02] active:scale-[0.98] cursor-pointer duration-300 transition-all shadow-lg"
               >
@@ -156,7 +168,8 @@ export default function Home() {
                 onClick={() => {
                   useTelemetryStore.getState().setSimulationMode('evac');
                   useTelemetryStore.getState().setIsSimulating(true);
-                  document.getElementById('stadium-map')?.scrollIntoView({ behavior: 'smooth' });
+                  setActiveTab('faqs');
+                  document.getElementById('insights-section')?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-amber-500/50 hover:bg-slate-950/80 hover:scale-[1.02] active:scale-[0.98] cursor-pointer duration-300 transition-all shadow-lg"
               >
@@ -250,6 +263,121 @@ export default function Home() {
                   <div className="border-t border-slate-850/80 pt-3 text-[10px] text-slate-500 leading-relaxed">
                     If connections to the live backend are disrupted, the frontend immediately spins up a local client-side simulation loop with safe-mode fallback.
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: FAQs & Safety Directives */}
+          {activeTab === 'faqs' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
+              {/* Column 1: Conventional FAQs & Handbook */}
+              <div className="space-y-4">
+                <h3 className="text-base font-extrabold text-slate-200 flex items-center gap-2">
+                  <HelpCircle className="w-4.5 h-4.5 text-cyan-400" />
+                  Stadium Policy & Conventional FAQs
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  Official venue handbook and visitor rules. FAQs answered:
+                </p>
+
+                <div className="space-y-3">
+                  {/* FAQ 1 */}
+                  <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-slate-700/50 transition-colors">
+                    <h4 className="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                      🍔 Where are the concessions? (Cheeseburger stand, etc.)
+                    </h4>
+                    <div className="text-[11px] text-slate-300 mt-1.5 leading-relaxed">
+                      Concessions are fully operational across stands:
+                      <br />• <strong>Burger Stand</strong>: North Stand, Section 102 (Cheeseburger, Fries, Soda).
+                      <br />• <strong>Pizza Hut</strong>: South Stand, Section 205 (Pepperoni Slice, Cheese, Water).
+                      <br />• <strong>Beer Garden</strong>: VIP Lounge (Craft Beer, Pretzels).
+                    </div>
+                  </div>
+
+                  {/* FAQ 2 */}
+                  <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-slate-700/50 transition-colors">
+                    <h4 className="text-xs font-bold text-slate-200 flex items-center gap-2">
+                      🎒 What is the bag size limit/policy?
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                      For overall safety, all bags must be made of **clear plastic** and cannot exceed the dimensions of **12x6x12 inches**. Backpacks and dark bags are prohibited.
+                    </p>
+                  </div>
+
+                  {/* FAQ 3 */}
+                  <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-slate-700/50 transition-colors">
+                    <h4 className="text-xs font-bold text-slate-200 flex items-center gap-2">
+                      🚽 Where are the restrooms located?
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                      Restrooms are conveniently located near **all main gates** (Gate A, Gate B, Gate C) and at the corner of each seating stand.
+                    </p>
+                  </div>
+
+                  {/* FAQ 4 */}
+                  <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-slate-700/50 transition-colors">
+                    <h4 className="text-xs font-bold text-slate-200 flex items-center gap-2">
+                      🚪 Is re-entry permitted in the stadium?
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                      No. Ticket scanning is one-way. Re-entry to the venue is strictly prohibited.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Column 2: Live AI Safety Directives Console */}
+              <div className="bg-slate-950/60 p-6 rounded-2xl border border-slate-800 flex flex-col gap-4 shadow-inner">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block text-center">
+                  Active Emergency & Safety Directives Console
+                </span>
+                
+                {/* Visual Status Indicator */}
+                <div className={`p-5 rounded-2xl border flex gap-4 items-start transition-all duration-500 ${
+                  useTelemetryStore.getState().simulationMode === 'evac'
+                  ? 'bg-rose-950/30 border-rose-500/40 text-rose-200 shadow-lg shadow-rose-500/5 animate-pulse'
+                  : useTelemetryStore.getState().simulationMode === 'halftime'
+                  ? 'bg-amber-950/30 border-amber-500/40 text-amber-200 shadow-lg shadow-amber-500/5'
+                  : 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
+                }`}>
+                  <ShieldAlert className={`w-8 h-8 flex-shrink-0 mt-0.5 ${
+                    useTelemetryStore.getState().simulationMode === 'evac'
+                    ? 'text-rose-400'
+                    : useTelemetryStore.getState().simulationMode === 'halftime'
+                    ? 'text-amber-400'
+                    : 'text-emerald-400'
+                  }`} />
+                  <div>
+                    <h4 className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
+                      SYSTEM STATUS: {
+                        useTelemetryStore.getState().simulationMode === 'evac'
+                        ? 'CRITICAL EVACUATION'
+                        : useTelemetryStore.getState().simulationMode === 'halftime'
+                        ? 'CROWD CONGESTION WARNING'
+                        : 'ALL SYSTEMS CLEAR'
+                      }
+                    </h4>
+                    
+                    <div className="text-xs leading-relaxed mt-2 font-medium">
+                      {
+                        useTelemetryStore.getState().simulationMode === 'evac'
+                        ? 'An emergency evacuation has been declared due to critical bottlenecking at the VIP Gate (45m+ delay). Attendee safety directive: DO NOT head to the VIP Gate. All attendees in the North stands must immediately exit via Gate A (West) or Gate B (South). Medical staff is stationed near Gate A.'
+                        : useTelemetryStore.getState().simulationMode === 'halftime'
+                        ? 'A crowd surge is active near Gate B due to halftime traffic. To avoid 20+ minute queues, fans in the South Stands are advised to wait in their seats for 5 minutes or route exits through Gate C, which has clear flow.'
+                        : 'All gates are operating at optimal throughput. Normal venue conditions apply. Attendees can enter/exit through any gate with low delay. Gate VIP and Gate A have the shortest queues.'
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-850/80 pt-4 text-[10px] text-slate-500 leading-relaxed space-y-2">
+                  <p>
+                    <strong>How this console functions:</strong> These safety directives are computed dynamically based on live, real-time sensor streams mapping queue wait times.
+                  </p>
+                  <p>
+                    The AI Concierge is automatically updated with these directives, allowing attendees to get immediate evacuation and queue routes directly through the chat box!
+                  </p>
                 </div>
               </div>
             </div>
