@@ -50,9 +50,9 @@ public class GeminiService {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("contents", new Object[]{ contentMap });
 
-            // Using gemini-1.5-pro or gemini-pro. Let's use gemini-1.5-flash for speed or gemini-pro.
+            // Using gemini-3.5-flash
             String response = webClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey)
+                    .uri("/v1/models/gemini-3.5-flash:generateContent?key=" + apiKey)
                     .header("Content-Type", "application/json")
                     .bodyValue(requestBody)
                     .retrieve()
