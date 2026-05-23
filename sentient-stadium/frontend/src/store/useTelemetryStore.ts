@@ -118,7 +118,7 @@ export const STADIUMS: StadiumInfo[] = [
     capacity: 75000,
     homeTeam: "FC Bayern Munich",
     themeColor: "from-red-600 to-red-950",
-    imagePath: "/stadiums/allianz.jpg",
+    imagePath: "/stadiums/allianz.png",
     styleProps: { ringColor: "#dc2626", fieldColor: "#15803d" },
     pinPositions: {
       tunnel: { top: "58%", left: "50%" },
