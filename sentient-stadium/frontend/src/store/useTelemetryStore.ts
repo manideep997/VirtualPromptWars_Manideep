@@ -12,7 +12,12 @@ interface TelemetryStore {
 }
 
 export const useTelemetryStore = create<TelemetryStore>((set) => ({
-  gates: {},
+  gates: {
+    "Gate A": { gateId: "Gate A", waitTimeMinutes: 2, crowdDelta: 8 },
+    "Gate B": { gateId: "Gate B", waitTimeMinutes: 4, crowdDelta: 12 },
+    "Gate C": { gateId: "Gate C", waitTimeMinutes: 3, crowdDelta: 10 },
+    "Gate VIP": { gateId: "Gate VIP", waitTimeMinutes: 1, crowdDelta: 3 }
+  },
   updateGate: (data) => set((state) => ({
     gates: {
       ...state.gates,
