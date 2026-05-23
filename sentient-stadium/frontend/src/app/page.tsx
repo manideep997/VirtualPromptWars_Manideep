@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import StadiumMap from '../components/StadiumMap';
 import AIChat from '../components/AIChat';
 import { connectWebSocket, disconnectWebSocket } from '../lib/socket';
+import { useTelemetryStore } from '../store/useTelemetryStore';
 import { 
   Building2, 
   Clock, 
@@ -54,10 +55,14 @@ export default function Home() {
         </header>
 
         {/* SECTION 1 & 2: Interactive map and control panel */}
-        <StadiumMap />
+        <div id="stadium-map" className="scroll-mt-6">
+          <StadiumMap />
+        </div>
 
         {/* SECTION 3: AI Concierge & Quick prompts */}
-        <AIChat />
+        <div id="ai-chat" className="scroll-mt-6">
+          <AIChat />
+        </div>
 
         {/* SECTION 4: Interactive Insights, Benefits, and Architecture (USER REQUESTED EXPLANATION) */}
         <section className="bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-slate-800/80 shadow-2xl mt-8 relative overflow-hidden">
@@ -103,7 +108,12 @@ export default function Home() {
           {activeTab === 'benefits' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
               {/* Card 1 */}
-              <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-emerald-500/30 transition-all">
+              <div 
+                onClick={() => {
+                  document.getElementById('stadium-map')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-emerald-500/50 hover:bg-slate-950/80 hover:scale-[1.02] active:scale-[0.98] cursor-pointer duration-300 transition-all shadow-lg"
+              >
                 <div>
                   <div className="bg-emerald-950/80 border border-emerald-500/20 p-3 rounded-xl w-fit mb-4">
                     <Clock className="w-5 h-5 text-emerald-400" />
@@ -120,7 +130,12 @@ export default function Home() {
               </div>
 
               {/* Card 2 */}
-              <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-cyan-500/30 transition-all">
+              <div 
+                onClick={() => {
+                  document.getElementById('ai-chat')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-cyan-500/50 hover:bg-slate-950/80 hover:scale-[1.02] active:scale-[0.98] cursor-pointer duration-300 transition-all shadow-lg"
+              >
                 <div>
                   <div className="bg-cyan-950/80 border border-cyan-500/20 p-3 rounded-xl w-fit mb-4">
                     <Building2 className="w-5 h-5 text-cyan-400" />
@@ -137,7 +152,14 @@ export default function Home() {
               </div>
 
               {/* Card 3 */}
-              <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-amber-500/30 transition-all">
+              <div 
+                onClick={() => {
+                  useTelemetryStore.getState().setSimulationMode('evac');
+                  useTelemetryStore.getState().setIsSimulating(true);
+                  document.getElementById('stadium-map')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between group hover:border-amber-500/50 hover:bg-slate-950/80 hover:scale-[1.02] active:scale-[0.98] cursor-pointer duration-300 transition-all shadow-lg"
+              >
                 <div>
                   <div className="bg-amber-950/80 border border-amber-500/20 p-3 rounded-xl w-fit mb-4">
                     <ShieldAlert className="w-5 h-5 text-amber-400" />
