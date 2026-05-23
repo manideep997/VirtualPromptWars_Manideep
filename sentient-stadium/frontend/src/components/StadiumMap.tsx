@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useTelemetryStore } from '../store/useTelemetryStore';
-import { Play, Pause, AlertTriangle, Shield, CheckCircle, Zap } from 'lucide-react';
+import { useTelemetryStore, STADIUMS } from '../store/useTelemetryStore';
+import { Play, Pause, AlertTriangle, Shield, CheckCircle, Zap, MapPin, Users, Activity } from 'lucide-react';
 
 export default function StadiumMap() {
   const gates = useTelemetryStore((state) => state.gates);
   const updateGate = useTelemetryStore((state) => state.updateGate);
+
+  // Zustand selectors for famous stadiums
+  const selectedStadium = useTelemetryStore((state) => state.selectedStadium);
+  const setSelectedStadium = useTelemetryStore((state) => state.setSelectedStadium);
 
   const isSimulating = useTelemetryStore((state) => state.isSimulating);
   const setIsSimulating = useTelemetryStore((state) => state.setIsSimulating);
@@ -52,7 +56,6 @@ export default function StadiumMap() {
         // Handle specific behaviors for evac
         if (simulationMode === 'evac') {
           if (gateId === 'Gate VIP') {
-            // VIP is bottlenecked
             waitTime = Math.round(35 + Math.random() * 10);
             crowdDelta = Math.round(95 + Math.random() * 15);
           } else {
@@ -96,6 +99,7 @@ export default function StadiumMap() {
   
   return (
     <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+      
       {/* Visual Stadium Map Area */}
       <div className="lg:col-span-2 bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] relative overflow-hidden flex flex-col justify-between hover:border-white/[0.08] transition-all duration-500">
         
@@ -104,25 +108,50 @@ export default function StadiumMap() {
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl"></div>
 
         <div>
-          <div className="flex items-center justify-between mb-4">
+          {/* Header area with active stadium details */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-emerald-400" />
-                Live 3D-Isometric Arena Visualizer
+              <h2 className="text-2xl font-black text-slate-100 flex items-center gap-2">
+                <Shield className="w-6 h-6 text-emerald-400 animate-pulse" />
+                {selectedStadium.name}
               </h2>
-              <p className="text-xs text-slate-400">Interactive telemetry sync & sensor node aggregation</p>
+              <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                {selectedStadium.location} • Home of <strong className="text-slate-200 ml-1">{selectedStadium.homeTeam}</strong>
+              </p>
             </div>
             
             {/* Live Indicator */}
-            <div className="flex items-center gap-2 bg-emerald-950/80 border border-emerald-500/30 px-3 py-1 rounded-full">
+            <div className="flex items-center gap-2 bg-emerald-950/80 border border-emerald-500/30 px-3.5 py-1.5 rounded-full self-start sm:self-center shadow-lg">
               <span className={`w-2.5 h-2.5 rounded-full bg-emerald-400 ${isSimulating ? 'animate-ping' : ''}`}></span>
-              <span className="text-xs font-bold text-emerald-400 tracking-wider">LIVE TELEMETRY</span>
+              <span className="text-[10px] font-black text-emerald-400 tracking-wider">LIVE DATA FEED</span>
             </div>
           </div>
 
+          {/* Stadium Location Selector bar */}
+          <div className="flex flex-wrap items-center gap-2 mb-4 bg-slate-950/50 p-2 rounded-2xl border border-white/[0.02]">
+            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 px-2 flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              Arena Location:
+            </span>
+            {STADIUMS.map((stadium) => (
+              <button
+                key={stadium.id}
+                onClick={() => setSelectedStadium(stadium)}
+                className={`text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition-all duration-300 ${
+                  selectedStadium.id === stadium.id
+                  ? `bg-gradient-to-r ${stadium.themeColor} text-white shadow-lg border border-white/10 scale-105`
+                  : 'bg-slate-900/60 border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900 hover:scale-102 active:scale-98'
+                }`}
+              >
+                {stadium.name === 'Spotify Camp Nou' ? 'Camp Nou' : stadium.name.split(' ')[0]}
+              </button>
+            ))}
+          </div>
+
           {/* SVG 3D Stadium map */}
-          <div className="relative bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex items-center justify-center min-h-[360px] shadow-inner">
-            <svg viewBox="0 0 800 500" className="w-full h-auto max-w-[650px] drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          <div className="relative bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-center min-h-[380px] shadow-inner">
+            <svg viewBox="0 0 800 500" className="w-full h-auto max-w-[650px] drop-shadow-[0_25px_50px_rgba(0,0,0,0.85)]">
               <defs>
                 {/* Field Gradient */}
                 <radialGradient id="fieldGrad" cx="50%" cy="50%" r="50%">
@@ -146,13 +175,67 @@ export default function StadiumMap() {
               {/* Outer Shadow Ring */}
               <ellipse cx="400" cy="270" rx="360" ry="180" fill="rgba(0, 0, 0, 0.6)" filter="url(#glow)" />
               
-              {/* Outer Concrete Wall */}
-              <ellipse cx="400" cy="260" rx="340" ry="165" fill="#334155" stroke="#475569" strokeWidth="3" />
-              <ellipse cx="400" cy="265" rx="340" ry="165" fill="none" stroke="#64748b" strokeWidth="1" />
+              {/* Outer Wall colored dynamically based on selected stadium theme color */}
+              <ellipse cx="400" cy="260" rx="340" ry="165" fill="#1e293b" stroke={selectedStadium.styleProps.ringColor} strokeWidth="5" />
+              <ellipse cx="400" cy="265" rx="340" ry="165" fill="none" stroke="#334155" strokeWidth="1.5" />
+
+              {/* 3D-SPECIFIC STADIUM VISUAL ARCHITECTURAL OVERLAYS */}
+              
+              {/* Camp Nou (FC Barcelona) Blue and Red themed seating stands */}
+              {selectedStadium.id === 'camp-nou' && (
+                <>
+                  <ellipse cx="400" cy="255" rx="320" ry="152" fill="none" stroke="#1d4ed8" strokeWidth="7" opacity="0.85" />
+                  <ellipse cx="400" cy="255" rx="300" ry="142" fill="none" stroke="#b91c1c" strokeWidth="5" opacity="0.85" />
+                </>
+              )}
+
+              {/* Wembley White Arch */}
+              {selectedStadium.id === 'wembley' && (
+                <path d="M 100,260 C 100,-20 700,-20 700,260" fill="none" stroke="#f1f5f9" strokeWidth="6" strokeLinecap="round" filter="url(#glow)" opacity="0.9" />
+              )}
+
+              {/* Santiago Bernabéu Futuristic metallic shell ribs */}
+              {selectedStadium.id === 'bernabeu' && (
+                <>
+                  <ellipse cx="400" cy="255" rx="330" ry="158" fill="none" stroke="#94a3b8" strokeWidth="3" opacity="0.9" />
+                  <ellipse cx="400" cy="255" rx="320" ry="150" fill="none" stroke="#64748b" strokeWidth="2.5" strokeDasharray="30,10" opacity="0.8" />
+                  <ellipse cx="400" cy="255" rx="310" ry="142" fill="none" stroke="#475569" strokeWidth="1.5" opacity="0.7" />
+                </>
+              )}
+
+              {/* San Siro Iconic circular concrete corner towers */}
+              {selectedStadium.id === 'san-siro' && (
+                <>
+                  {/* Corner Cylindrical Towers */}
+                  <circle cx="85" cy="115" r="16" fill="#334155" stroke="#475569" strokeWidth="2" filter="url(#glow)" opacity="0.9" />
+                  <circle cx="85" cy="115" r="10" fill="#1e293b" />
+                  
+                  <circle cx="85" cy="395" r="16" fill="#334155" stroke="#475569" strokeWidth="2" filter="url(#glow)" opacity="0.9" />
+                  <circle cx="85" cy="395" r="10" fill="#1e293b" />
+                  
+                  <circle cx="715" cy="115" r="16" fill="#334155" stroke="#475569" strokeWidth="2" filter="url(#glow)" opacity="0.9" />
+                  <circle cx="715" cy="115" r="10" fill="#1e293b" />
+                  
+                  <circle cx="715" cy="395" r="16" fill="#334155" stroke="#475569" strokeWidth="2" filter="url(#glow)" opacity="0.9" />
+                  <circle cx="715" cy="395" r="10" fill="#1e293b" />
+                  
+                  {/* Red crossbeams */}
+                  <line x1="100" y1="120" x2="700" y2="120" stroke="#b91c1c" strokeWidth="3" opacity="0.5" />
+                  <line x1="100" y1="390" x2="700" y2="390" stroke="#b91c1c" strokeWidth="3" opacity="0.5" />
+                </>
+              )}
+
+              {/* Allianz Arena Red Diamond-patterned outer cushions */}
+              {selectedStadium.id === 'allianz' && (
+                <>
+                  <ellipse cx="400" cy="255" rx="335" ry="160" fill="none" stroke="#ef4444" strokeWidth="9" strokeDasharray="16,10" filter="url(#glow)" opacity="0.85" />
+                  <ellipse cx="400" cy="255" rx="325" ry="152" fill="none" stroke="#b91c1c" strokeWidth="3" strokeDasharray="10,16" opacity="0.6" />
+                </>
+              )}
 
               {/* Seating Stands Layer 2 (Outer Tier) */}
-              <ellipse cx="400" cy="255" rx="310" ry="145" fill="url(#standsGrad)" stroke="#1e293b" strokeWidth="4" />
-              <ellipse cx="400" cy="255" rx="280" ry="130" fill="#0f172a" stroke="#334155" strokeWidth="2" />
+              <ellipse cx="400" cy="255" rx="310" ry="145" fill="url(#standsGrad)" stroke="#0f172a" strokeWidth="4" />
+              <ellipse cx="400" cy="255" rx="280" ry="130" fill="#0f172a" stroke="#1e293b" strokeWidth="2" />
 
               {/* Seating Stands Layer 1 (Inner Tier) */}
               <ellipse cx="400" cy="255" rx="250" ry="112" fill="#1e293b" stroke="#0f172a" strokeWidth="3" />
@@ -171,6 +254,30 @@ export default function StadiumMap() {
               <path d="M 210,240 Q 220,255 210,270" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
               <path d="M 590,240 Q 580,255 590,270" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
 
+              {/* 3D GOAL POSTS AND NETS (Realism) */}
+              {/* Left Goal Post */}
+              <path d="M 195,242 L 195,268 L 203,264 L 203,246 Z" fill="rgba(255,255,255,0.15)" stroke="#f1f5f9" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 195,242 L 203,246 M 195,268 L 203,264 M 195,255 L 203,255" stroke="rgba(255,255,255,0.6)" strokeWidth="1" strokeDasharray="3,3" />
+
+              {/* Right Goal Post */}
+              <path d="M 605,242 L 605,268 L 597,264 L 597,246 Z" fill="rgba(255,255,255,0.15)" stroke="#f1f5f9" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 605,242 L 597,246 M 605,268 L 597,264 M 605,255 L 597,255" stroke="rgba(255,255,255,0.6)" strokeWidth="1" strokeDasharray="3,3" />
+
+              {/* PLAYER TUNNEL ENTRANCES (Indicate from where players emerge) */}
+              <g 
+                transform="translate(400, 335)" 
+                className="cursor-pointer"
+                onMouseEnter={() => setActiveGateHover("Player Tunnel")}
+                onMouseLeave={() => setActiveGateHover(null)}
+              >
+                {/* Ping animation ring */}
+                <ellipse cx="0" cy="0" rx="14" ry="7" fill="none" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" filter="url(#glow)"/>
+                {/* Arched Tunnel Canopy */}
+                <path d="M -10,0 C -10,-14 10,-14 10,0" fill="#0f172a" stroke="#22d3ee" strokeWidth="2.5" />
+                <path d="M -7,-2 L 7,-2 M -5,-5 L 5,-5" stroke="#0891b2" strokeWidth="1" />
+                <text x="0" y="8" textAnchor="middle" fill="#22d3ee" fontWeight="black" fontSize="7" letterSpacing="0.5">TUNNEL</text>
+              </g>
+
               {/* DETAILED INTERACTIVE GATE NODES */}
               
               {/* Gate VIP (Top Entrance) */}
@@ -180,9 +287,7 @@ export default function StadiumMap() {
                 onMouseEnter={() => setActiveGateHover("Gate VIP")}
                 onMouseLeave={() => setActiveGateHover(null)}
               >
-                {/* Pulse Ring */}
                 <ellipse cx="0" cy="0" rx="30" ry="15" fill="none" stroke={getGateStatus("Gate VIP").color} strokeWidth="2" className="animate-pulse" filter="url(#glow)"/>
-                {/* Gate Body */}
                 <ellipse cx="0" cy="0" rx="20" ry="10" fill={getGateStatus("Gate VIP").color} stroke="#1e293b" strokeWidth="2" />
                 <ellipse cx="0" cy="-3" rx="14" ry="7" fill="#0f172a" />
                 <text x="0" y="3" textAnchor="middle" fill="white" fontWeight="black" fontSize="9" letterSpacing="1">VIP</text>
@@ -195,7 +300,6 @@ export default function StadiumMap() {
                 onMouseEnter={() => setActiveGateHover("Gate A")}
                 onMouseLeave={() => setActiveGateHover(null)}
               >
-                {/* Pulse Ring */}
                 <ellipse cx="0" cy="0" rx="30" ry="15" fill="none" stroke={getGateStatus("Gate A").color} strokeWidth="2" className="animate-pulse" filter="url(#glow)"/>
                 <ellipse cx="0" cy="0" rx="20" ry="10" fill={getGateStatus("Gate A").color} stroke="#1e293b" strokeWidth="2" />
                 <ellipse cx="0" cy="-3" rx="14" ry="7" fill="#0f172a" />
@@ -209,7 +313,6 @@ export default function StadiumMap() {
                 onMouseEnter={() => setActiveGateHover("Gate B")}
                 onMouseLeave={() => setActiveGateHover(null)}
               >
-                {/* Pulse Ring */}
                 <ellipse cx="0" cy="0" rx="30" ry="15" fill="none" stroke={getGateStatus("Gate B").color} strokeWidth="2" className="animate-pulse" filter="url(#glow)"/>
                 <ellipse cx="0" cy="0" rx="20" ry="10" fill={getGateStatus("Gate B").color} stroke="#1e293b" strokeWidth="2" />
                 <ellipse cx="0" cy="-3" rx="14" ry="7" fill="#0f172a" />
@@ -223,7 +326,6 @@ export default function StadiumMap() {
                 onMouseEnter={() => setActiveGateHover("Gate C")}
                 onMouseLeave={() => setActiveGateHover(null)}
               >
-                {/* Pulse Ring */}
                 <ellipse cx="0" cy="0" rx="30" ry="15" fill="none" stroke={getGateStatus("Gate C").color} strokeWidth="2" className="animate-pulse" filter="url(#glow)"/>
                 <ellipse cx="0" cy="0" rx="20" ry="10" fill={getGateStatus("Gate C").color} stroke="#1e293b" strokeWidth="2" />
                 <ellipse cx="0" cy="-3" rx="14" ry="7" fill="#0f172a" />
@@ -236,33 +338,49 @@ export default function StadiumMap() {
               <div 
                 className="absolute bg-slate-950/90 backdrop-blur-3xl border border-white/10 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] max-w-xs transition-all duration-300 transform scale-100 z-30"
                 style={{
-                  top: activeGateHover === 'Gate VIP' ? '15%' : activeGateHover === 'Gate B' ? '65%' : '40%',
-                  left: activeGateHover === 'Gate A' ? '18%' : activeGateHover === 'Gate C' ? '50%' : '35%'
+                  top: activeGateHover === 'Gate VIP' ? '15%' : activeGateHover === 'Gate B' ? '65%' : activeGateHover === 'Player Tunnel' ? '48%' : '40%',
+                  left: activeGateHover === 'Gate A' ? '18%' : activeGateHover === 'Gate C' ? '50%' : activeGateHover === 'Player Tunnel' ? '35%' : '35%'
                 }}
               >
                 <div className="flex items-center justify-between gap-4 mb-2">
-                  <span className="font-extrabold text-white text-sm">{activeGateHover}</span>
-                  <span 
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: getGateStatus(activeGateHover).color + '20',
-                      color: getGateStatus(activeGateHover).color,
-                      border: `1px solid ${getGateStatus(activeGateHover).color}30`
-                    }}
-                  >
-                    {getGateStatus(activeGateHover).label.split('/')[0]}
+                  <span className="font-extrabold text-white text-sm flex items-center gap-1.5">
+                    {activeGateHover === 'Player Tunnel' && <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>}
+                    {activeGateHover}
                   </span>
+                  {activeGateHover !== 'Player Tunnel' ? (
+                    <span 
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: getGateStatus(activeGateHover).color + '20',
+                        color: getGateStatus(activeGateHover).color,
+                        border: `1px solid ${getGateStatus(activeGateHover).color}30`
+                      }}
+                    >
+                      {getGateStatus(activeGateHover).label.split('/')[0]}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/20 text-cyan-400">
+                      SECURE ZONE
+                    </span>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
-                    <p className="text-slate-400 text-[10px]">Queue Wait</p>
-                    <p className="text-white font-black text-sm mt-0.5">{getGateDetails(activeGateHover).waitTimeMinutes} mins</p>
+                
+                {activeGateHover === 'Player Tunnel' ? (
+                  <p className="text-[10.5px] text-slate-300 leading-relaxed">
+                    Primary player entrance canopy. Tunnel connects to home/away locker rooms and security pathways. Direct pitch access for emergency personnel is actively maintained.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
+                      <p className="text-slate-400 text-[10px]">Queue Wait</p>
+                      <p className="text-white font-black text-sm mt-0.5">{getGateDetails(activeGateHover).waitTimeMinutes} mins</p>
+                    </div>
+                    <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
+                      <p className="text-slate-400 text-[10px]">Crowd Delta</p>
+                      <p className="text-white font-black text-sm mt-0.5">+{getGateDetails(activeGateHover).crowdDelta} / min</p>
+                    </div>
                   </div>
-                  <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
-                    <p className="text-slate-400 text-[10px]">Crowd Delta</p>
-                    <p className="text-white font-black text-sm mt-0.5">+{getGateDetails(activeGateHover).crowdDelta} / min</p>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -294,20 +412,26 @@ export default function StadiumMap() {
           </h2>
           <p className="text-xs text-slate-400 mb-4">Manipulate simulated IoT sensors and trigger venue incidents</p>
 
-          {/* Aggregate Stats Cards */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3 shadow-inner">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Venue Inflow</span>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-black text-slate-100">{totalCrowd}</span>
-                <span className="text-[10px] text-emerald-400">/min</span>
+          {/* Aggregate Stats Cards (Includes dynamic capacity indicator!) */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 shadow-inner">
+              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Inflow</span>
+              <div className="flex items-baseline gap-0.5 mt-0.5">
+                <span className="text-lg font-black text-slate-100">{totalCrowd}</span>
+                <span className="text-[9px] text-emerald-400">/m</span>
               </div>
             </div>
-            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3 shadow-inner">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Avg Wait Time</span>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-black text-amber-400">{avgWait}</span>
-                <span className="text-[10px] text-amber-400">mins</span>
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 shadow-inner">
+              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Avg Wait</span>
+              <div className="flex items-baseline gap-0.5 mt-0.5">
+                <span className="text-lg font-black text-amber-400">{avgWait}</span>
+                <span className="text-[9px] text-amber-400">m</span>
+              </div>
+            </div>
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 shadow-inner">
+              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Capacity</span>
+              <div className="flex items-baseline gap-0.5 mt-0.5">
+                <span className="text-sm font-black text-cyan-400">{selectedStadium.capacity.toLocaleString()}</span>
               </div>
             </div>
           </div>

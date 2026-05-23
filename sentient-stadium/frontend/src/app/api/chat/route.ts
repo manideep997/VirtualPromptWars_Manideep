@@ -3,7 +3,7 @@ import stadiumContext from '../../../lib/stadium_context.json';
 
 export async function POST(req: Request) {
   try {
-    const { prompt, liveTelemetry } = await req.json();
+    const { prompt, liveTelemetry, selectedStadium } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
     if (!apiKey || apiKey.trim() === '') {
@@ -11,6 +11,12 @@ export async function POST(req: Request) {
     }
 
     const fullPrompt = `You are a helpful Sentient Stadium AI assistant.
+Currently, the user is viewing the following European stadium:
+- Name: ${selectedStadium?.name || 'Spotify Camp Nou'}
+- Location: ${selectedStadium?.location || 'Barcelona, Spain'}
+- Seating Capacity: ${selectedStadium?.capacity || 99354}
+- Home Team: ${selectedStadium?.homeTeam || 'FC Barcelona'}
+
 Here is the static rules and context: ${JSON.stringify(stadiumContext)}
 Here is the real-time gate telemetry (wait times and crowd deltas): ${JSON.stringify(liveTelemetry)}
 Based on this, answer the user's prompt: ${prompt}`;

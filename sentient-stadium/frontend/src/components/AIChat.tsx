@@ -12,6 +12,7 @@ export default function AIChat() {
   const [isLoading, setIsLoading] = useState(false);
   
   const gates = useTelemetryStore((state) => state.gates);
+  const selectedStadium = useTelemetryStore((state) => state.selectedStadium);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll chat to bottom
@@ -34,7 +35,8 @@ export default function AIChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: textToSend,
-          liveTelemetry: gates
+          liveTelemetry: gates,
+          selectedStadium: selectedStadium
         })
       });
 
@@ -53,7 +55,8 @@ export default function AIChat() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: textToSend,
-            liveTelemetry: gates
+            liveTelemetry: gates,
+            selectedStadium: selectedStadium
           })
         });
 
@@ -64,7 +67,7 @@ export default function AIChat() {
         // Safe-mode degradation response
         setChatLog(prev => [...prev, { 
           role: 'assistant', 
-          text: "⚠️ [Safe-Mode Degradation] My AI neural net is currently offline. Please monitor the 2D Stadium Live Map directly for queue status. Restrooms are located near all main gates, and the First Aid is at Gate A." 
+          text: "⚠️ [Safe-Mode Degradation] My AI neural net is currently offline. Please monitor the 3D Stadium Live Map directly for queue status. Restrooms are located near all main gates, and the First Aid is at Gate A." 
         }]);
       }
     } finally {
