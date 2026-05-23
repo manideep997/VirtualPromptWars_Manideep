@@ -9,7 +9,6 @@ import {
   QrCode, 
   UploadCloud, 
   CheckCircle, 
-  ArrowRight, 
   Download, 
   Sparkles, 
   ShieldCheck, 
@@ -29,6 +28,7 @@ export default function CheckInPortal() {
   const [gateId, setGateId] = useState("Gate A");
   const [idType, setIdType] = useState("passport");
   const [idFileName, setIdFileName] = useState<string | null>(null);
+  const [idPhotoUrl, setIdPhotoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
@@ -47,6 +47,11 @@ export default function CheckInPortal() {
     if (!file) return;
 
     setIdFileName(file.name);
+    
+    // Create a local blob URL of the uploaded image to extract their portrait
+    const objectUrl = URL.createObjectURL(file);
+    setIdPhotoUrl(objectUrl);
+
     setIsUploading(true);
     setUploadProgress(0);
 
@@ -113,14 +118,270 @@ export default function CheckInPortal() {
     setEmail("");
     setTicketId(`ST-${Math.floor(10000 + Math.random() * 90000)}`);
     setIdFileName(null);
+    setIdPhotoUrl(null);
     setGeneratedPass(null);
     setUploadProgress(0);
+  };
+
+  const getTooltipCoords = () => {
+    // Return relative placement coordinates for ticket elements
+    return {
+      top: `calc(${activeStadiumInfo.pinPositions.tunnel.top} - 10px)`,
+      left: `calc(${activeStadiumInfo.pinPositions.tunnel.left} + 20px)`
+    };
+  };
+
+  // Luxury PDF printable ticket pass generator! Includes website logo and scannable QR code!
+  const printPassToPdf = () => {
+    if (!generatedPass) return;
+
+    // Generate functional, scannable QR Code URL
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+      `SENTIENT STADIUM VIP FAST-PASS\nTicket Ref: ${generatedPass.ticketId}\nHolder: ${generatedPass.fullName}\nEmail: ${generatedPass.email}\nVenue: ${generatedPass.stadium.name}\nGate: ${generatedPass.gate}\nVerification: BIOMETRIC MATCH`
+    )}`;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert("Please allow popups to download your Entry Pass.");
+      return;
+    }
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Sentient Stadium Pass - ${generatedPass.ticketId}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+            body {
+              font-family: 'Outfit', sans-serif;
+              background-color: #f8fafc;
+              color: #0f172a;
+              margin: 0;
+              padding: 40px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 90vh;
+            }
+            .ticket-card {
+              width: 480px;
+              background: #ffffff;
+              border: 1px solid #e2e8f0;
+              border-radius: 32px;
+              padding: 35px;
+              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+              position: relative;
+            }
+            .header {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              border-bottom: 2px dashed #cbd5e1;
+              padding-bottom: 20px;
+              margin-bottom: 20px;
+            }
+            .logo-section {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+            .logo-svg {
+              width: 32px;
+              height: 32px;
+              color: #10b981;
+            }
+            .website-name {
+              font-size: 18px;
+              font-weight: 900;
+              letter-spacing: -0.5px;
+              color: #0f172a;
+            }
+            .pass-badge {
+              background: #10b981;
+              color: #ffffff;
+              font-size: 9px;
+              font-weight: 900;
+              padding: 5px 10px;
+              border-radius: 8px;
+              letter-spacing: 1px;
+            }
+            .stadium-title {
+              font-size: 22px;
+              font-weight: 900;
+              margin: 0 0 4px 0;
+              color: #0f172a;
+            }
+            .stadium-location {
+              font-size: 11px;
+              color: #64748b;
+              margin: 0 0 20px 0;
+            }
+            .attendee-block {
+              display: flex;
+              align-items: center;
+              gap: 20px;
+              background: #f8fafc;
+              padding: 15px;
+              border-radius: 16px;
+              border: 1px solid #e2e8f0;
+              margin-bottom: 20px;
+            }
+            .attendee-img {
+              width: 68px;
+              height: 68px;
+              border-radius: 12px;
+              object-fit: cover;
+              border: 2.5px solid #10b981;
+              background: #cbd5e1;
+            }
+            .details {
+              display: flex;
+              flex-direction: column;
+              min-width: 0;
+            }
+            .label {
+              font-size: 8px;
+              font-weight: 800;
+              color: #94a3b8;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .value {
+              font-size: 13px;
+              font-weight: 900;
+              color: #0f172a;
+            }
+            .meta-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 15px;
+              margin-bottom: 25px;
+            }
+            .meta-card {
+              background: #f8fafc;
+              padding: 12px 15px;
+              border-radius: 14px;
+              border: 1px solid #e2e8f0;
+            }
+            .qr-section {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              border-top: 2px dashed #cbd5e1;
+              padding-top: 20px;
+              text-align: center;
+            }
+            .qr-code {
+              width: 135px;
+              height: 135px;
+              margin-bottom: 12px;
+              padding: 6px;
+              background: #ffffff;
+              border: 1px solid #cbd5e1;
+              border-radius: 12px;
+            }
+            .scan-text {
+              font-size: 9px;
+              font-weight: 700;
+              color: #64748b;
+              letter-spacing: 0.8px;
+            }
+            .watermark {
+              font-size: 10px;
+              font-weight: 800;
+              color: #10b981;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              margin-top: 15px;
+              justify-content: center;
+              letter-spacing: 0.5px;
+            }
+            @media print {
+              body {
+                background: #ffffff;
+                padding: 0;
+              }
+              .ticket-card {
+                box-shadow: none;
+                border: 2px solid #000000;
+                margin: auto;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="ticket-card">
+            <div class="header">
+              <div class="logo-section">
+                <!-- Glowing Shield Logo -->
+                <svg class="logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+                <span class="website-name">SENTIENT STADIUM</span>
+              </div>
+              <span class="pass-badge">FAST-PASS</span>
+            </div>
+
+            <h3 class="stadium-title">${generatedPass.stadium.name}</h3>
+            <p class="stadium-location">${generatedPass.stadium.location}</p>
+
+            <div class="attendee-block">
+              ${idPhotoUrl 
+                ? `<img class="attendee-img" src="${idPhotoUrl}" alt="ID Photo" />` 
+                : `<div class="attendee-img" style="display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: #64748b;">👤</div>`
+              }
+              <div class="details">
+                <span class="label">ATTENDEE</span>
+                <span class="value" style="font-size: 14px;">${generatedPass.fullName}</span>
+                <span style="font-size: 10px; color: #64748b; margin-top: 2px; word-break: break-all;">${generatedPass.email}</span>
+              </div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-card">
+                <span class="label">ASSIGNED ENTRY GATE</span>
+                <span class="value" style="color: #10b981; font-size: 14px;">${generatedPass.gate}</span>
+              </div>
+              <div class="meta-card">
+                <span class="label">TICKET REFERENCE</span>
+                <span class="value" style="font-family: monospace; font-size: 14px;">${generatedPass.ticketId}</span>
+              </div>
+            </div>
+
+            <div class="qr-section">
+              <img class="qr-code" src="${qrCodeUrl}" alt="QR Code" />
+              <span class="scan-text font-black">SCAN CODE AT ENTRY TURNSTILE</span>
+            </div>
+
+            <div class="watermark">
+              <!-- Check icon -->
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              BIOMETRICALLY VERIFIED TICKET HOLDER
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
     <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4 animate-fade-in">
       
-      {/* Column 1: Check-in Biometric Form (7 cols) */}
+      {/* Column 1: Check-in Biometric Form */}
       <div className="lg:col-span-7 bg-slate-900/20 backdrop-blur-2xl rounded-3xl p-6 md:p-8 border border-white/[0.04] shadow-[0_20px_50px_rgba(0,0,0,0.55)] relative overflow-hidden hover:border-white/[0.08] transition-all duration-500 flex flex-col justify-between">
         
         {/* Glow Ambient */}
@@ -258,13 +519,13 @@ export default function CheckInPortal() {
             {/* Simulated ID Proof Upload Zone */}
             <div className="space-y-1.5">
               <label className="text-[10px] text-slate-400 uppercase font-black tracking-wider">
-                Upload Identity Verification Proof (PNG, JPG or PDF)
+                Upload Identity Verification Proof (Must include your face portrait)
               </label>
               
               <div className="relative border border-dashed border-slate-800 hover:border-cyan-500/40 rounded-2xl p-6 bg-slate-950/30 flex flex-col items-center justify-center text-center group cursor-pointer transition-all duration-300">
                 <input 
                   type="file" 
-                  accept="image/*,application/pdf"
+                  accept="image/*"
                   onChange={handleFileChange}
                   disabled={!!generatedPass || isUploading}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -278,7 +539,7 @@ export default function CheckInPortal() {
                     <div>
                       <p className="text-xs font-bold text-slate-200">{idFileName}</p>
                       <p className="text-[10px] text-slate-500 mt-0.5">
-                        {isUploading ? `Uploading... ${uploadProgress}%` : "Verification document successfully staged"}
+                        {isUploading ? `Uploading... ${uploadProgress}%` : "ID document processed successfully"}
                       </p>
                     </div>
                     {isUploading && (
@@ -341,7 +602,7 @@ export default function CheckInPortal() {
         </div>
       </div>
 
-      {/* Column 2: Digital Entry Pass generator (5 cols) */}
+      {/* Column 2: Digital Entry Pass generator */}
       <div className="lg:col-span-5 flex flex-col items-center justify-center">
         
         {generatedPass ? (
@@ -373,11 +634,25 @@ export default function CheckInPortal() {
 
             {/* Entry Pass Body */}
             <div className="p-5 space-y-4 bg-slate-950/90 relative z-10">
-              {/* Attendee Details */}
-              <div className="space-y-1">
-                <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black block">ATTENDEE</span>
-                <span className="text-xs font-black text-slate-100 block">{generatedPass.fullName}</span>
-                <span className="text-[9px] text-slate-400 block truncate">{generatedPass.email}</span>
+              
+              {/* Attendee Photo and Details */}
+              <div className="flex gap-4 items-center">
+                {idPhotoUrl ? (
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-emerald-500/40 flex-shrink-0 bg-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                    <img src={idPhotoUrl} alt="ID Photo" className="w-full h-full object-cover" />
+                    {/* Glowing scanning radar line */}
+                    <div className="absolute inset-x-0 h-0.5 bg-emerald-400 opacity-60 top-0 animate-[bounce_2s_infinite]"></div>
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 rounded-xl border border-slate-800 flex-shrink-0 bg-slate-950/60 flex items-center justify-center text-slate-700">
+                    <User className="w-8 h-8" />
+                  </div>
+                )}
+                <div className="space-y-1 flex-1 min-w-0">
+                  <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black block">ATTENDEE</span>
+                  <span className="text-xs font-black text-slate-100 block truncate">{generatedPass.fullName}</span>
+                  <span className="text-[9px] text-slate-400 block truncate">{generatedPass.email}</span>
+                </div>
               </div>
 
               {/* Gate & Telemetry Wait Time Integration */}
@@ -388,27 +663,27 @@ export default function CheckInPortal() {
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[8px] text-slate-500 uppercase tracking-widest font-black block">LIVE WAIT TIME</span>
-                  <span className="text-sm font-black text-cyan-400 block">
+                  <span className="text-sm font-black text-cyan-400 block font-black">
                     {generatedPass.gateWaitTime === 0 ? "1 min" : `${generatedPass.gateWaitTime} mins`}
                   </span>
                 </div>
               </div>
 
-              {/* Interactive Glowing QR Code */}
+              {/* Real working QR Code loaded from free generator API! */}
               <div className="flex flex-col items-center justify-center py-3 bg-slate-950 border border-slate-900 rounded-2xl relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"></div>
                 
-                {/* Vector neon QR Code SVG */}
-                <svg viewBox="0 0 100 100" className="w-28 h-28 text-white stroke-slate-100 stroke-2 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-                  <path d="M 10,10 L 30,10 L 30,30 L 10,30 Z M 15,15 L 25,15 L 25,25 L 15,25 Z M 20,20 L 20,20" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <path d="M 70,10 L 90,10 L 90,30 L 70,30 Z M 75,15 L 85,15 L 85,25 L 75,25 Z" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <path d="M 10,70 L 30,70 L 30,90 L 10,90 Z M 15,75 L 25,75 L 25,85 L 15,85 Z" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <path d="M 45,10 L 55,10 M 45,20 L 55,20 M 45,30 L 45,45 M 55,40 L 55,50" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <path d="M 10,45 L 20,45 M 10,55 L 25,55 M 30,45 L 35,55 M 35,35 L 35,40" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <path d="M 70,45 L 90,45 M 70,55 L 75,55 M 85,55 L 90,55 M 80,60 L 80,75" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <path d="M 45,70 L 45,90 M 55,70 L 65,70 M 55,80 L 65,85 M 65,90 L 65,90" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                  <circle cx="50" cy="50" r="5" className="fill-cyan-400 stroke-none" />
-                </svg>
+                <div className="relative p-2 bg-white rounded-xl shadow-lg border border-emerald-500/20">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(
+                      `SENTIENT STADIUM VIP FAST-PASS\nTicket Ref: ${generatedPass.ticketId}\nHolder: ${generatedPass.fullName}\nEmail: ${generatedPass.email}\nVenue: ${generatedPass.stadium.name}\nGate: ${generatedPass.gate}\nStatus: BIOMETRICALLY VERIFIED`
+                    )}`} 
+                    alt="Scan QR" 
+                    className="w-28 h-28 select-none"
+                  />
+                  {/* Glowing scanning laser bar */}
+                  <div className="absolute inset-x-2 h-0.5 bg-emerald-450 opacity-60 top-2 animate-[bounce_3s_infinite]"></div>
+                </div>
 
                 <span className="text-[8px] text-slate-500 tracking-widest font-black uppercase mt-3">ID VERIFIED SCAN AT ENTRY</span>
               </div>
@@ -421,8 +696,8 @@ export default function CheckInPortal() {
                 <span>{generatedPass.timestamp.split(',')[0]}</span>
               </div>
               <button 
-                onClick={() => alert("Simulating fast-pass print to PDF...")}
-                className="w-full bg-slate-900 hover:bg-slate-850 text-white font-bold text-[10px] py-2.5 rounded-xl border border-white/[0.04] transition-all flex items-center justify-center gap-1.5 group"
+                onClick={printPassToPdf}
+                className="w-full bg-slate-900 hover:bg-slate-850 text-white font-black text-[10px] py-2.5 rounded-xl border border-white/[0.04] transition-all flex items-center justify-center gap-1.5 group font-black"
               >
                 <Download className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-105 transition-transform" />
                 DOWNLOAD ENTRY PASS (PDF)
