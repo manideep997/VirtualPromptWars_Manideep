@@ -1,6 +1,6 @@
 # Sentient Stadium 🏟️
 
-🚀 **Live Production Link:** [**sentient-stadium.manideep.com**](https://sentient-stadium.manideep.com)
+🚀 **Live Production Link:** [**virtual-prompt-wars-manideep.vercel.app**](https://virtual-prompt-wars-manideep.vercel.app)
 
 Welcome to **Sentient Stadium**, a physical event experience dashboard that aggregates live venue telemetry, maps it to a 2D interactive layout, and provides an AI-powered concierge using Google's Gemini.
 
