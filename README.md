@@ -8,7 +8,7 @@
   </p>
 
   <p>
-    🚀 <b>Live Production URL:</b> <a href="https://sentient-stadium.manideep.com"><b>sentient-stadium.manideep.com</b></a>
+    🚀 <b>Live Production URL:</b> <a href="https://virtual-prompt-wars-manideep.vercel.app"><b>virtual-prompt-wars-manideep.vercel.app</b></a>
   </p>
 
   <p>
